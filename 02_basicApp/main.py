@@ -1,6 +1,6 @@
 from fastapi import FastAPI,Query
-from typing import Annotated
-from pydantic import BaseModel
+from typing import Annotated , Literal
+from pydantic import BaseModel, Field
 
 
 # Request Body 
@@ -88,3 +88,17 @@ async def exclude_params(
         return {"hidden_query": hidden_query}
     else:
         return {"hidden_query": "Not found"}
+
+# Query parameter models 
+# If you have a group of query parameters that are related, you can create a Pydantic model to declare them.
+
+class FilterParams(BaseModel) : 
+    model_config = {"extra","forbid"} #o restrict the query parameters that you want to receive.
+    limit : int = Field(100, gt = 0, le= 100)
+    offset : int = Field(0, ge=0)
+    order_by : Literal["created_at","updated_at"] = "created_at"
+    tags : list[str] = []
+
+@app.get("/querymodel")
+async def querymodel(filter_query : Annotated[FilterParams, Query()]) : 
+    return filter_query
